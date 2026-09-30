@@ -4,7 +4,7 @@ import CrudActions from "../../../shared/components/CrudActions";
 import Footer from "../../../shared/components/Footer";
 import Menu from "../../../shared/components/Menu";
 import NewButton from "../../../shared/components/NewButton";
-import { listar, remover } from "../../../shared/services/crudService";
+import { buscarPorId, listar, remover } from "../../../shared/services/crudService";
 import { MAPPING_CONTROLLER_PRODUTO } from "../service/produtoService";
 
 export default function ProdutoPage() {
@@ -19,6 +19,16 @@ export default function ProdutoPage() {
       const data = await listar(MAPPING_CONTROLLER_PRODUTO);
       setLista(data);
    }
+
+    const [produto, setProduto] = useState({
+        id: null,
+        codigo: "",
+        titulo: "",
+        descricao: "",
+        valorUnitario: "",
+        tempoEntregaMinimo: "",
+        tempoEntregaMaximo: ""
+    });
 
    function editar(id) {}
 
@@ -40,6 +50,32 @@ export default function ProdutoPage() {
             toast.error("Erro ao tentar remover o produto.");
         }
     }
+
+    async function detalhar(id) {
+        
+            try {
+            
+                const data = await buscarPorId(
+                    MAPPING_CONTROLLER_PRODUTO,
+                    id
+                );
+            
+                setProduto({
+                    id: data.id,
+                    codigo: data.codigo ?? "",
+                    titulo: data.titulo ?? "",
+                    descricao: data.descricao ?? "",
+                    valorUnitario: data.valorUnitario ?? "",
+                    tempoEntregaMinimo: data.tempoEntregaMinimo ?? "",
+                    tempoEntregaMaximo: data.tempoEntregaMaximo ?? ""
+                });
+            
+                document.getElementById('modal-detalhar').showModal()
+            
+            } catch (erro) {
+                toast.error("Erro ao carregar produto.");
+            }
+        }
 
 
    return (
@@ -84,6 +120,7 @@ export default function ProdutoPage() {
                                        </td>
                                        <td style={{textAlign: 'center'}}>
                                            <CrudActions
+                                               onDetail={() => detalhar(produto.id)}
                                                onEdit={() => editar(produto.id)}
                                                onDelete={() => confirmarRemover(produto.id)}
                                            />
@@ -95,6 +132,38 @@ export default function ProdutoPage() {
                    </div>
                </div>
            </div>
+
+            <dialog id="modal-detalhar" className="modal">
+                <div className="modal-box">   
+                    <h3 className="font-bold text-lg">Dados do Produto</h3>
+                    <div className="divider" />
+                    <p className="py-4"> 
+                        <strong>Código:</strong> {produto.codigo}
+                    </p>
+                    <p className="py-4">
+                        <strong>Título:</strong> {produto.titulo}
+                    </p>
+                    <p className="py-4">
+                        <strong>Descrição:</strong> {produto.descricao}
+                    </p>
+                    <p className="py-4">
+                        <strong>Valor Unitário:</strong> {produto.valorUnitario}
+                    </p>
+                    <p className="py-4">
+                        <strong>Tempo MIN de Entrega:</strong> {produto.tempoEntregaMinimo}
+                    </p>
+                    <p className="py-4">
+                        <strong>Tempo MAX de Entrega:</strong> {produto.tempoEntregaMaximo}
+                    </p>
+                    <div className="modal-action">
+                        <form method="dialog">
+                            {/* if there is a button in form, it will close the modal */}
+                            <button className="btn">Fechar</button>
+                        </form>
+                    </div>
+                </div>
+            </dialog>
+
            <Footer />
        </div>
    );
